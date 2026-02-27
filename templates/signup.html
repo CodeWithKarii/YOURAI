@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Modern Signup</title>
+
+<style>
+/* ===== RESET ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* ===== BACKGROUND ===== */
+body {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+}
+
+/* ===== CARD ===== */
+#signupForm {
+  background: white;
+  padding: 40px;
+  width: 350px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* ===== TITLE ===== */
+#signupForm h2 {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #333;
+}
+
+/* ===== FLASH ===== */
+.flash {
+  background: #f8d7da;
+  color: #842029;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+/* ===== LABEL ===== */
+#signupForm label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: #555;
+}
+
+/* ===== INPUT ===== */
+#signupForm input,
+#signupForm select {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 18px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+#signupForm input:focus,
+#signupForm select:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+  outline: none;
+}
+
+/* ===== BUTTON ===== */
+#signupForm input[type="submit"] {
+  width: 100%;
+  padding: 12px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+#signupForm input[type="submit"]:hover {
+  background: #5a67d8;
+  transform: translateY(-2px);
+}
+
+/* ===== LINKS ===== */
+#signupForm p {
+  text-align: center;
+  font-size: 13px;
+  margin-top: 12px;
+}
+
+#signupForm a {
+  color: #667eea;
+  text-decoration: none;
+}
+
+#signupForm a:hover {
+  text-decoration: underline;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 400px) {
+  #signupForm {
+    width: 90%;
+    padding: 25px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<form method="POST" id="signupForm">
+
+    <h2>Create Account</h2>
+
+    {{ form.hidden_tag() }}
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="flash">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    {{ form.username.label }}
+    {{ form.username }}
+
+    {{ form.email.label }}
+    {{ form.email }}
+
+    {{ form.password.label }}
+    {{ form.password }}
+
+    {{ form.confirm_password.label }}
+    {{ form.confirm_password }}
+
+    {{ form.role.label }}
+    {{ form.role }}
+
+    {{ form.submit }}
+
+    <p>Already have an account?
+       <a href="{{ url_for('index') }}">Login</a>
+    </p>
+
+</form>
+
+</body>
+</html>
