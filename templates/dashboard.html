@@ -1,106 +1,216 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Home Feed</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f2f5;
-            margin: 0;
-            padding: 0;
-        }
+<meta charset="UTF-8">
+<title>YOUR AI Dashboard</title>
+<style>
+body {
+    margin:0; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background:#111; color:white;
+}
+header {
+    background:#141414; color:white; padding:15px 30px; display:flex; justify-content:space-between; align-items:center;
+    box-shadow:0 2px 4px rgba(0,0,0,0.5);
+}
+header h1 { margin:0; font-size:1.8em; }
+header a { text-decoration:none; color:white; padding:8px 15px; border-radius:5px; background:#e50914; transition:0.3s; }
+header a:hover { background:#f40612; }
 
-        header {
-            background-color: #4267B2;
-            color: white;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        header h1 {
-            margin: 0;
-            font-size: 1.5em;
-        }
-        header a, .admin-btn {
-            text-decoration: none;
-            color: white;
-            padding: 8px 15px;
-            border-radius: 5px;
-            transition: background 0.3s;
-        }
-        header a {
-            background-color: #e74c3c;
-        }
-        header a:hover {
-            background-color: #c0392b;
-        }
-        .admin-btn {
-            background-color: #27ae60;
-        }
-        .admin-btn:hover {
-            background-color: #1e8449;
-        }
+/* Search bar */
+.search-bar { width:100%; display:flex; justify-content:center; padding:20px 0; }
+.search-bar input { width:100%; max-width:500px; padding:10px 15px; border-radius:5px; border:none; outline:none; font-size:1em; }
 
-        .container {
-            max-width: 700px;
-            margin: 20px auto;
-            padding: 0 15px;
-        }
+/* Category */
+.category { margin:20px 0; position:relative; }
+.category h2 { font-size:1.5em; margin-left:30px; margin-bottom:10px; color:#fff; }
 
-        .post {
-            background-color: white;
-            padding: 15px 20px;
-            margin-bottom: 15px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .post:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-        }
+/* Carousel container */
+.tools-row-container { position:relative; }
+.tools-row {
+    display:flex; gap:20px; overflow:hidden; padding-left:30px; scroll-behavior:smooth;
+    transition: transform 0.3s ease;
+}
+.tool-card {
+    background:#222; border-radius:10px; min-width:220px; max-width:220px; flex:0 0 auto;
+    padding:15px; text-align:center; transition:transform 0.3s, box-shadow 0.3s; display:flex; flex-direction:column; justify-content:space-between;
+}
+.tool-card:hover { transform:scale(1.1); box-shadow:0 6px 20px rgba(255,255,255,0.3); }
+.tool-card h3 { margin:10px 0 5px; font-size:1.1em; color:#fff; }
+.tool-card p { font-size:0.9em; color:#bbb; margin-bottom:10px; }
+.tool-card a { display:inline-block; text-decoration:none; background:#e50914; color:white; padding:6px 10px; border-radius:5px; font-size:0.85em; margin-bottom:5px; transition:0.3s; }
+.tool-card a:hover { background:#f40612; }
 
-        .post-header {
-            font-weight: bold;
-            margin-bottom: 8px;
-            color: #333;
-        }
+/* Ratings & comments */
+.rating { display:flex; justify-content:center; gap:2px; font-size:1.1em; cursor:pointer; margin-bottom:5px; }
+.rating span { color:#555; transition:color 0.2s; }
+.rating span.active, .rating span.hover { color:#f1c40f; }
+.comments { margin-top:5px; text-align:left; max-height:80px; overflow-y:auto; font-size:0.8em; color:#ccc; }
+.comment { background:#333; padding:3px 6px; margin-bottom:3px; border-radius:4px; }
+.comment-form { display:flex; flex-direction:column; }
+.comment-form textarea { resize:none; padding:5px; font-size:0.8em; border-radius:5px; border:none; margin-top:3px; }
+.comment-form button { margin-top:3px; padding:4px 6px; font-size:0.8em; border:none; border-radius:5px; background:#27ae60; color:white; cursor:pointer; }
+.comment-form button:hover { background:#1e8449; }
 
-        .no-posts {
-            text-align: center;
-            color: #777;
-            font-style: italic;
-            margin-top: 20px;
-        }
-    </style>
+/* Carousel arrows */
+.arrow {
+    position:absolute; top:50%; transform:translateY(-50%);
+    background:rgba(0,0,0,0.6); border:none; color:white; font-size:2em; padding:10px; border-radius:50%; cursor:pointer; z-index:2;
+    transition:background 0.3s;
+}
+.arrow:hover { background:rgba(0,0,0,0.9); }
+.arrow-left { left:0; }
+.arrow-right { right:0; }
+
+@media(max-width:768px){
+    .tool-card { min-width:160px; max-width:160px; }
+    header h1 { font-size:1.4em; }
+    .arrow { display:none; }
+}
+</style>
 </head>
 <body>
 
 <header>
-    <h1>Welcome, {{ user.name }}! {{user.email}}</h1>
-    <div>
-        {% if user.email == ADMIN_EMAIL %}
-            <a href="{{ url_for('admin_users') }}" class="admin-btn">Admin: Users</a>
-        {% endif %}
-        <a href="{{ url_for('logout') }}">Logout</a>
-    </div>
+    <h1>AI Tools Dashboard | Welcome, {{user.name}} ({{user.email}})</h1>
+    <a href="{{ url_for('logout') }}">Logout</a>
 </header>
 
-<div class="container">
-    {% if posts %}
-        {% for post in posts %}
-            <div class="post">
-                <div class="post-header">{{ user.name }}</div>
-                <div class="post-content">{{ post.content }}</div>
-            </div>
-        {% endfor %}
-    {% else %}
-        <div class="no-posts">No posts yet. Check back later!</div>
-    {% endif %}
+<div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search AI tools...">
 </div>
+
+<!-- Recommended Section -->
+<div id="recommended" class="category">
+    <h2>⭐ Recommended For You</h2>
+    <button class="arrow arrow-left">&#10094;</button>
+    <div class="tools-row"></div>
+    <button class="arrow arrow-right">&#10095;</button>
+</div>
+
+<!-- Dashboard categories will appear here -->
+<div id="dashboard"></div>
+
+<script>
+// All tools data
+const categories = [
+  // Chat AI Tools
+  {name:"💬 Chat AI Tools", tools:[{name:"ChatGPT", desc:"AI conversational assistant.", link:"https://chat.openai.com/"},{name:"Claude", desc:"Anthropic AI assistant.", link:"https://www.anthropic.com/claude"},{name:"Gemini", desc:"Google multimodal AI.", link:"https://gemini.google.com/"},{name:"Perplexity AI", desc:"AI research & search.", link:"https://www.perplexity.ai/"},{name:"Poe", desc:"Multi-model chat platform.", link:"https://poe.com/"},{name:"Microsoft Copilot", desc:"AI assistant in Microsoft apps.", link:"https://www.microsoft.com/en-us/microsoft-365/copilot"},{name:"DeepSeek", desc:"Advanced search AI.", link:"#"}, {name:"Bing Chat", desc:"Microsoft AI chatbot.", link:"https://www.bing.com/chat"}, {name:"Character.ai", desc:"Customizable AI companion.", link:"https://character.ai/"}, {name:"Gemini Pro", desc:"Enhanced Google AI.", link:"#"}, {name:"Grok", desc:"Fast reasoning AI assistant.", link:"#"}, {name:"Google Bard", desc:"Google's conversational AI.", link:"https://bard.google.com/"},{name:"Kimi AI", desc:"Autonomous assistant tool.", link:"#"}, {name:"T3 Chat", desc:"Aggregated chat interface.", link:"#"}, {name:"Doubao", desc:"ByteDance integrated AI chatbot.", link:"#"}, {name:"Arena AI", desc:"Chatbot comparison platform.", link:"#"}, {name:"JanitorAI", desc:"Lightweight AI assistant.", link:"#"}, {name:"Poe GPT Mix", desc:"Multi-model chat service.", link:"#"}, {name:"Monica AI", desc:"Personal AI companion.", link:"#"}, {name:"CrushOn AI", desc:"Social/chat AI tool.", link:"#"}]},
+  // Gaming AI Tools
+  {name:"🎮 Gaming AI Tools", tools:[{name:"AI Dungeon", desc:"Interactive adventures.", link:"https://www.aidungeon.io/"},{name:"Ready Player Me", desc:"Cross-game avatar generator.", link:"https://readyplayer.me/"},{name:"VocalMod", desc:"Real-time AI voice changer.", link:"https://vocalmod.com/"},{name:"Chai AI", desc:"Interactive mobile AI companion.", link:"https://chai.ml/"},{name:"3DFY.ai", desc:"3D model generation from text.", link:"#"}, {name:"Eklipse GG", desc:"Gameplay highlights automation.", link:"#"}, {name:"Spline", desc:"3D modeling UI tool.", link:"#"}, {name:"Luma AI", desc:"3D capture & visualization.", link:"#"}, {name:"Runway", desc:"Video editing & AI effects.", link:"https://runwayml.com/"},{name:"Nano Banana Pro", desc:"AI image & design suite.", link:"#"}, {name:"Cursor AI", desc:"Development tool for game logic.", link:"#"}, {name:"Perplexity for games", desc:"In-game support search.", link:"#"}, {name:"Codeium", desc:"AI coding assistant for games.", link:"https://codeium.com/"}, {name:"GitHub Copilot", desc:"AI coding assistant.", link:"https://github.com/features/copilot"}, {name:"Nvidia G-Assist", desc:"System-level gaming AI.", link:"#"}, {name:"DeepMind Alpha", desc:"AI research models.", link:"#"}, {name:"Realtime Robotics AI", desc:"Motion planning AI.", link:"#"}, {name:"Uizard", desc:"Rapid UI prototyping for HUDs.", link:"https://uizard.io/"}, {name:"Zapier", desc:"Workflow automation gaming.", link:"https://zapier.com/"}, {name:"Studio AI Plugins", desc:"Community AI integrations.", link:"#"}]},
+  // Music AI Tools
+  {name:"🎵 Music AI Tools", tools:[{name:"Suno AI", desc:"Generative AI music.", link:"https://suno.com/"},{name:"ElevenLabs", desc:"AI voice & audio tools.", link:"https://elevenlabs.io/"},{name:"Endel", desc:"AI soundscapes & personalized music.", link:"https://endel.io/"},{name:"Boomy", desc:"Automated music producer.", link:"https://boomy.com/"},{name:"Soundraw", desc:"Customizable AI music.", link:"https://soundraw.io/"},{name:"Ecrett Music", desc:"Music generator for media.", link:"https://ecrettmusic.com/"},{name:"Udio", desc:"AI music creation suite.", link:"#"}, {name:"Mubert", desc:"AI stream-powered music.", link:"https://mubert.com/"},{name:"Amper Music", desc:"AI composer platform.", link:"https://www.ampermusic.com/"},{name:"AIVA", desc:"AI orchestral composer.", link:"https://www.aiva.ai/"},{name:"Voicestars", desc:"Celebrity-style AI vocals.", link:"#"}, {name:"Spotify AI DJ", desc:"AI curated playlists.", link:"#"}, {name:"Groove AI", desc:"Beat & loop generator.", link:"#"}, {name:"Harmony AI", desc:"AI vocal harmony tool.", link:"#"}, {name:"AI Mastering Labs", desc:"Automated track mastering.", link:"#"}, {name:"LyricStudio", desc:"AI lyric writing.", link:"#"}, {name:"Melodrive", desc:"Adaptive music for games.", link:"#"}, {name:"Musico", desc:"Interactive AI music engine.", link:"#"}, {name:"DAWZY", desc:"AI assistant for DAW workflows.", link:"#"}, {name:"15.ai", desc:"Text-to-speech voice AI.", link:"https://15.ai/"}]},
+  // Popular AI Tools
+  {name:"🔥 Popular AI Tools", tools:[{name:"Canva AI", desc:"Design & creative suite.", link:"https://www.canva.com/"},{name:"Midjourney", desc:"Image generation AI.", link:"https://www.midjourney.com/"},{name:"DeepL", desc:"AI translation platform.", link:"https://www.deepl.com/"},{name:"Grammarly", desc:"Writing assistant AI.", link:"https://www.grammarly.com/"},{name:"Notion AI", desc:"Knowledge & docs AI.", link:"https://www.notion.so/product/ai"},{name:"Synthesia", desc:"AI video generator.", link:"https://www.synthesia.io/"},{name:"Runway", desc:"Video & visual AI.", link:"https://runwayml.com/"},{name:"Zapier AI", desc:"Workflow automation.", link:"https://zapier.com/"},{name:"Gamma", desc:"AI presentation creator.", link:"https://gamma.app/"},{name:"Leonardo AI", desc:"All-purpose design AI.", link:"https://leonardo.ai/"},{name:"Stable Diffusion", desc:"Open-source image AI.", link:"https://stability.ai/"},{name:"Adobe Firefly", desc:"Creative AI suite.", link:"https://www.adobe.com/sensei.html"},{name:"Notion GPT", desc:"Extended workspace AI.", link:"https://www.notion.so/product/ai"},{name:"PicWish", desc:"Photo enhancement AI.", link:"https://picwish.com/"},{name:"Fliki", desc:"Text-to-video AI.", link:"https://fliki.ai/"},{name:"Jasper AI", desc:"Content generation AI.", link:"https://www.jasper.ai/"},{name:"QuillBot", desc:"Paraphrasing & writing AI.", link:"https://quillbot.com/"},{name:"Perplexity Research", desc:"Deep search AI.", link:"https://www.perplexity.ai/"},{name:"Notion Form AI", desc:"Auto note generation AI.", link:"#"}, {name:"Nimbus AI", desc:"Productivity & task assistant.", link:"https://nimbusweb.me/"}]}
+];
+
+// Function to create tool cards
+function createToolCard(tool){
+    const card = document.createElement('div'); card.className='tool-card'; card.dataset.tool=tool.name;
+    card.innerHTML=`<h3>${tool.name}</h3><p>${tool.desc}</p><a href="${tool.link}" target="_blank">Visit</a>
+        <div class="rating"><span data-value="1">&#9733;</span><span data-value="2">&#9733;</span><span data-value="3">&#9733;</span><span data-value="4">&#9733;</span><span data-value="5">&#9733;</span></div>
+        <div class="comments"></div>
+        <form class="comment-form"><textarea rows="2" placeholder="Leave a review..."></textarea><button type="submit">Post</button></form>`;
+    return card;
+}
+
+// Render categories
+const dashboard = document.getElementById('dashboard');
+categories.forEach(cat=>{
+    const catDiv = document.createElement('div'); catDiv.className='category';
+    catDiv.innerHTML=`<h2>${cat.name}</h2>
+        <button class="arrow arrow-left">&#10094;</button>
+        <div class="tools-row"></div>
+        <button class="arrow arrow-right">&#10095;</button>`;
+    const row = catDiv.querySelector('.tools-row');
+    cat.tools.forEach(tool=>row.appendChild(createToolCard(tool)));
+    dashboard.appendChild(catDiv);
+
+    // Arrows
+    const left = catDiv.querySelector('.arrow-left');
+    const right = catDiv.querySelector('.arrow-right');
+    left.addEventListener('click', ()=>row.scrollBy({left:-600, behavior:'smooth'}));
+    right.addEventListener('click', ()=>row.scrollBy({left:600, behavior:'smooth'}));
+});
+
+// Recommended for You
+function updateRecommendations() {
+    const allTools = [];
+    categories.forEach(cat => allTools.push(...cat.tools.map(tool => ({...tool, category:cat.name}))));
+    const ratedTools = [];
+    document.querySelectorAll('.tool-card').forEach(card => {
+        const stars = card.querySelectorAll('.rating span.active').length;
+        if (stars >= 4) ratedTools.push({name: card.dataset.tool, stars, category: card.parentElement.parentElement.querySelector('h2').textContent});
+    });
+    const recommendedRow = document.querySelector('#recommended .tools-row');
+    recommendedRow.innerHTML = '';
+    if (ratedTools.length === 0) {
+        recommendedRow.innerHTML = '<p style="color:#bbb; padding-left:30px;">Rate some tools to get recommendations!</p>';
+        return;
+    }
+    const favoriteCategories = [...new Set(ratedTools.map(t => t.category))];
+    let recTools = [];
+    favoriteCategories.forEach(catName => {
+        const cat = categories.find(c => c.name === catName);
+        cat.tools.forEach(tool => {
+            const alreadyRated = ratedTools.find(r => r.name === tool.name);
+            if (!alreadyRated) recTools.push({...tool, category:catName});
+        });
+    });
+    recTools.slice(0,20).forEach(tool => recommendedRow.appendChild(createToolCard(tool)));
+}
+const recRow = document.querySelector('#recommended .tools-row');
+const recLeft = document.querySelector('#recommended .arrow-left');
+const recRight = document.querySelector('#recommended .arrow-right');
+recLeft.addEventListener('click', ()=>recRow.scrollBy({left:-600, behavior:'smooth'}));
+recRight.addEventListener('click', ()=>recRow.scrollBy({left:600, behavior:'smooth'}));
+
+// Ratings, comments, and update recommendations
+document.addEventListener('submit', e=>{
+    if(e.target.matches('.comment-form')){
+        e.preventDefault();
+        const textarea=e.target.querySelector('textarea');
+        if(!textarea.value.trim()) return;
+        const commentDiv=e.target.previousElementSibling;
+        const commentEl=document.createElement('div'); commentEl.className='comment';
+        commentEl.textContent=textarea.value.trim();
+        commentDiv.appendChild(commentEl);
+        textarea.value='';
+        updateRecommendations();
+    }
+});
+document.addEventListener('click', e=>{
+    if(e.target.parentElement.classList.contains('rating')){
+        const stars = Array.from(e.target.parentElement.children);
+        const value = parseInt(e.target.dataset.value);
+        stars.forEach((s,i)=>s.classList.toggle('active', i<value));
+        updateRecommendations();
+    }
+});
+document.addEventListener('mouseover', e=>{
+    if(e.target.parentElement.classList.contains('rating')){
+        const stars = Array.from(e.target.parentElement.children);
+        const value = parseInt(e.target.dataset.value);
+        stars.forEach((s,i)=>s.classList.toggle('hover', i<value));
+    }
+});
+document.addEventListener('mouseout', e=>{
+    if(e.target.parentElement.classList.contains('rating')){
+        const stars = Array.from(e.target.parentElement.children);
+        stars.forEach(s=>s.classList.remove('hover'));
+    }
+});
+
+// Search filter
+const searchInput = document.getElementById('searchInput');
+searchInput.addEventListener('input', e=>{
+    const query=e.target.value.toLowerCase();
+    document.querySelectorAll('.tool-card').forEach(card=>{
+        const title=card.querySelector('h3').textContent.toLowerCase();
+        const desc=card.querySelector('p').textContent.toLowerCase();
+        card.style.display = (!query || title.includes(query) || desc.includes(query)) ? 'flex' : 'none';
+    });
+});
+</script>
 
 </body>
 </html>
